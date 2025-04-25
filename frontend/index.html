@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Shield Trust Pension Chatbot Demo</title>
+  <!-- 2️⃣ Identity config placeholder (will be overwritten) -->
+  <script>
+    // These will be filled in by our fetch below
+    window.chatbaseUserConfig = {
+      user_id: '',
+      user_hash: '',
+      user_metadata: {
+        name: 'Alice Example',
+        email: 'alice@example.com',
+        company: 'Shield Trust Pension'
+      }
+    };
+  </script>
+</head>
+<body>
+  <h1>Demo: Shield Trust Pension Chatbot</h1>
+  <p>Welcome, <span id="username">…</span>! The chat bubble will load shortly.</p>
+
+  
+  <div id="chatbase-chat"></div>
+
+  <!-- 1️⃣ Fetch identity config from server -->
+  <script>
+    fetch('/chatbase-token?userId=alice-uuid-123')
+      .then(res => res.json()) .then(cfg => {
+        window.chatbaseUserConfig.user_id   = cfg.user_id;
+        window.chatbaseUserConfig.user_hash = cfg.user_hash;
+        document.getElementById('username').textContent = cfg.user_id;
+      })
+      .catch(console.error);
+  </script>
+
+  <!-- 3️⃣ Embed the Chatbase bubble -->
+  <script>
+  (function(){
+    if (!window.chatbase || window.chatbase("getState") !== "initialized") {
+      window.chatbase = (...args) => {
+        if (!window.chatbase.q) window.chatbase.q = [];
+        window.chatbase.q.push(args);
+      };
+      window.chatbase = new Proxy(window.chatbase, {
+        get(target, prop) {
+          if (prop === "q") return target.q;
+          return (...args) => target(prop, ...args);
+        }
+      });
+    }
+    const onLoad = function(){
+      const script = document.createElement("script");
+      script.src         = "https://www.chatbase.co/embed.min.js";
+      script.id          = "Mu8nugX-cmiEs75R22SoZ";
+      script.domain      = "www.chatbase.co";
+      document.body.appendChild(script);
+      // 4️⃣ Identify the user with Chatbase after the SDK loads
+      script.onload = () => {
+        window.chatbase("identify", {
+          user_id:   window.chatbaseUserConfig.user_id,
+          user_hash: window.chatbaseUserConfig.user_hash,
+          user_metadata: window.chatbaseUserConfig.user_metadata
+        }); };
+    };
+    if (document.readyState === "complete") onLoad();
+    else window.addEventListener("load", onLoad);
+  })();
+  </script>
+</body>
+</html>
